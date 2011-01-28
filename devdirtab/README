@@ -1,0 +1,67 @@
+This directory provides a generic dirtab device that can be used to implement dirtab based synthetic filesystems. The device is implemented in dirtab.c along with its associated header file dirtab.h. The basic objective is to facilitate the development of npfs based synthetic filesystems using dirtab namespace definitions. In implementing the filesystem a user is left with just two responsibilities:
+* describe the filesystem layout using dirtab based descriptions
+* define the 'personality' of the filesystem by defining handlers for ONLY relevant file operations (most often read/write) on specific files - rest of the behavious is assumed to be default.
+This allows the user to implement just the handlers that are unique to the filesystem and be done with.
+
+
+The 'netfs' and 'consolefs' filesystem examples provided in the source illustrate use of devdirtab. While consolefs is a static filesystem, 'netfs' is a clone filesystem much like the /net filesystem in Plan9
+
+To make them first make the libnpfs.a library in ../libnpfs (just run make with no target)
+Then run make on the 'netfs' and 'consolefs' targets respectively in the devdirtab (this) directory.
+
+netfs usage:
+
+Step 1:
+execute the netfs file server:
+
+$ ./netfs
+
+Step 2:
+mount it remotely:
+
+(example using inferno)
+; mount -A tcp!9.3.61.3!2233 tmp
+
+Step 3:
+create a new connection
+
+; cd tmp
+; cat clone
+1
+; cd 1
+
+Step 4:
+connect to tcp server
+
+; echo -n 'connect 9.3.61.3 2234' > ctl
+
+Step 5a:
+read data off it:
+
+; cat data
+
+Step 5b:
+send data to the remote side:
+; echo 'hello world' > data
+
+Step 5c:
+hosting a tcp server
+
+; cd /tmp
+; cat clone
+2
+; cd 2
+; echo 'port 1234' > ctl   <--- defines port where tcp server is hosted
+; cat listen
+3  <-- new socket created after a client connects to our socket
+; cd /tmp/3
+   .............
+
+to disconnect a connection;
+
+; echo -n 'disconnect' > ctl
+
+to remove a connection (NOTE: should be disconnected):
+; echo -n 'release' > ctl
+
+

@@ -1,0 +1,8 @@
+To build:
+
+cd libnpfs
+make
+cd ../devdirtab
+make netfs
+
+Also read devdirtab/README
